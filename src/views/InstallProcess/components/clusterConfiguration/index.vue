@@ -1,0 +1,579 @@
+<template>
+  <div>
+    <el-form
+      v-if="ruleForm"
+      :model="ruleForm"
+      :rules="rules"
+      v-loading="loading"
+      @submit.native.prevent
+      ref="ruleForm"
+      label-width="125px"
+      class="demo-ruleForm"
+    >
+      <el-form-item label="镜像仓库">
+        <el-collapse class="setbr d2-w-640" v-model="activeImageHubNames">
+          <el-collapse-item class="clcolor" name="false">
+            <template slot="title">
+              <el-radio-group
+                class="d2-ml-35"
+                v-model="ruleForm.imageHub.default"
+                @change="changeImageHubRadio"
+              >
+                <el-radio :label="true">新安装默认镜像仓库</el-radio>
+                <el-radio :label="false">提供已有的镜像仓库</el-radio>
+              </el-radio-group>
+            </template>
+            <div v-show="!ruleForm.imageHub.default">
+              <el-form-item label="域名" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.imageHub.domain" class="d2-input_inner"></el-input>
+              </el-form-item>
+              <el-form-item label="空间名称" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.imageHub.namespace" class="d2-input_inner"></el-input>
+              </el-form-item>
+              <el-form-item label="账户" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.imageHub.username" class="d2-input_inner"></el-input>
+              </el-form-item>
+              <el-form-item label="密码" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.imageHub.password" class="d2-input_inner"></el-input>
+              </el-form-item>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+        <div class="clues">镜像仓库用于应用运行镜像存储和集群公共镜像存储，若你的Kubernetes集群雨安装本地镜像仓库，请提供</div>
+      </el-form-item>
+      <el-form-item label="数据中心数据库">
+        <el-collapse class="setbr d2-w-640" v-model="activeregionDatabaseNames">
+          <el-collapse-item class="clcolor" name="false">
+            <template slot="title">
+              <el-radio-group
+                class="d2-ml-35"
+                v-model="ruleForm.regionDatabase.default"
+                @change="changeregionDatabaseRadio"
+              >
+                <el-radio :label="true">新安装数据库</el-radio>
+                <el-radio :label="false">提供已有的数据仓库</el-radio>
+              </el-radio-group>
+            </template>
+            <div v-show="!ruleForm.regionDatabase.default">
+              <el-form-item label="地址" label-width="85px" class="d2-mt d2-form-item">
+                <el-input
+                  v-model="ruleForm.regionDatabase.host"
+                  class="d2-input_inner_url d2-w-150"
+                ></el-input>
+                <span class="d2-w-20">:</span>
+                <el-input v-model="ruleForm.regionDatabase.port" class="d2-input_inner_url d2-w-80"></el-input>
+              </el-form-item>
+              <el-form-item label="账户" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.regionDatabase.username" class="d2-input_inner"></el-input>
+              </el-form-item>
+              <el-form-item label="密码" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.regionDatabase.password" class="d2-input_inner"></el-input>
+              </el-form-item>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+
+        <div class="clues">数据中心数据库记录数据中心原数据，若使用其他数据库（比如RDS）请提供可访问信息</div>
+      </el-form-item>
+      <el-form-item label="UI数据库">
+        <el-collapse class="setbr d2-w-640" v-model="activeUiDatabaseNames">
+          <el-collapse-item class="clcolor" name="false">
+            <template slot="title">
+              <el-radio-group
+                class="d2-ml-35"
+                v-model="ruleForm.uiDatabase.default"
+                @change="changeUiDatabaseRadio"
+              >
+                <el-radio :label="true">新安装UI数据库</el-radio>
+                <el-radio :label="false">提供已有的UI数据库</el-radio>
+              </el-radio-group>
+            </template>
+            <div v-show="!ruleForm.uiDatabase.default">
+              <el-form-item label="地址" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.uiDatabase.host" class="d2-input_inner_url d2-w-150"></el-input>
+                <span class="d2-w-20">:</span>
+                <el-input v-model="ruleForm.uiDatabase.port" class="d2-input_inner_url d2-w-80"></el-input>
+              </el-form-item>
+              <el-form-item label="账户" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.uiDatabase.username" class="d2-input_inner"></el-input>
+              </el-form-item>
+              <el-form-item label="密码" label-width="85px" class="d2-mt d2-form-item">
+                <el-input v-model="ruleForm.uiDatabase.password" class="d2-input_inner"></el-input>
+              </el-form-item>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+        <div class="clues">UI数据库记录数据中心原数据，若使用其他数据库（比如RDS请提供可访问信息）</div>
+      </el-form-item>
+      <el-form-item label="ETCD">
+        <el-collapse class="setbr d2-w-640" v-model="activeETCDNames">
+          <el-collapse-item class="clcolor" name="false">
+            <template slot="title">
+              <el-radio-group
+                class="d2-ml-35"
+                v-model="ruleForm.etcdConfig.default"
+                @change="changeETCDRadio"
+              >
+                <el-radio :label="true">新安装ETCD</el-radio>
+                <el-radio :label="false">提供已有的ETCD</el-radio>
+              </el-radio-group>
+            </template>
+            <div v-show="!ruleForm.etcdConfig.default" v-if="ruleForm.etcdConfig">
+              <el-form-item label="节点列表" label-width="85px" class="d2-mt d2-form-item">
+                <div
+                  v-for="(item, index) in ruleForm.etcdConfig.endpoints"
+                  :key="index"
+                  class="cen"
+                  :style="{
+                    marginTop: index===0?'0':'20px'
+                }"
+                >
+                  <el-input v-model="ruleForm.etcdConfig.endpoints[index]" class="d2-input_inner"></el-input>
+                  <i class="el-icon-circle-plus-outline icon-f-22 d2-ml-16" @click="addEndpoints"></i>
+                  <i
+                    v-show="ruleForm.etcdConfig.endpoints.length!=1"
+                    class="el-icon-remove-outline icon-f-22 d2-ml-16"
+                    @click.prevent="removeEndpoints(index)"
+                  ></i>
+                </div>
+              </el-form-item>
+
+              <el-form-item label="TLS" label-width="85px" class="d2-mt d2-form-item">
+                <el-switch v-model="ruleForm.etcdConfig.useTLS"></el-switch>
+              </el-form-item>
+              <div v-show="ruleForm.etcdConfig.useTLS">
+                <el-form-item label="机构证书" label-width="85px" class="d2-mt d2-form-item">
+                  <el-input
+                    v-if="ruleForm.etcdConfig.certInfo"
+                    v-model="ruleForm.etcdConfig.certInfo.ca_file"
+                    class="d2-input_inner"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="证书" label-width="85px" class="d2-mt d2-form-item">
+                  <el-input
+                    v-if="ruleForm.etcdConfig.certInfo"
+                    v-model="ruleForm.etcdConfig.certInfo.cert_file"
+                    class="d2-input_inner"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="证书私钥" label-width="85px" class="d2-mt d2-form-item">
+                  <el-input
+                    v-if="ruleForm.etcdConfig.certInfo"
+                    v-model="ruleForm.etcdConfig.certInfo.key_file"
+                    class="d2-input_inner"
+                  ></el-input>
+                </el-form-item>
+              </div>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+        <div class="clues">Rainbon各组件依赖ETCD服务，若不提供则默认安装</div>
+      </el-form-item>
+      <el-form-item
+        label="网关安装节点"
+        prop="gatewayNodes"
+        :rules="[{ required: true, message: '请至少选择一个网关安装节点'},{ type: 'array', trigger: 'change' , message: '请至少选择一个网关安装节点'}]"
+      >
+        <el-checkbox-group v-model="ruleForm.setgatewayNodes">
+          <el-checkbox
+            v-for="(item, index) in ruleForm.gatewayNodes"
+            :key="index"
+            class="cr_checkbox"
+            :label="item.nodeIP"
+            border
+          ></el-checkbox>
+        </el-checkbox-group>
+
+        <div class="clues">Rainbond网关服务默认安装到集群所有合适的管理节点，你可以选择配置，网关服务将占用宿主机80/443等端口</div>
+      </el-form-item>
+      <el-form-item label="分配默认域名">
+        <el-switch v-model="ruleForm.HTTPDomain.default"></el-switch>
+        <div class="clues">默认域名是指Rainbond 为HTTP类应用动态分配的多级域名，默认域名在非离线安装模式下将动态创建公网DNS泛解析记录</div>
+      </el-form-item>
+      <el-form-item :label="'网关外网IP'">
+        <div v-for="(item, indexs) in ruleForm.gatewayIngressIPs" :key="item" class="cen">
+          <el-input v-model="ruleForm.gatewayIngressIPs[indexs]" class="d2-input_inner"></el-input>
+          <i class="el-icon-circle-plus-outline icon-f-22 d2-ml-16" @click="addIP"></i>
+          <i
+            v-show="ruleForm.gatewayIngressIPs.length!=1"
+            class="el-icon-remove-outline icon-f-22 d2-ml-16"
+            @click.prevent="removeIP(indexs)"
+          ></i>
+        </div>
+
+        <div class="clues">默认域名默认解析到所有网关节点的IP地址上，若指定则仅解析到指定</div>
+      </el-form-item>
+      <el-form-item label="共享存储驱动">
+        <el-collapse class="setbr d2-w-640" v-model="activeStorageNames">
+          <el-collapse-item class="clcolor" name="false">
+            <template slot="title">
+              <el-radio-group
+                v-model="ruleForm.storage.default"
+                class="d2-ml-35"
+                @change="changeStorageRadio"
+              >
+                <el-radio :label="true">新部署NFS-Server</el-radio>
+                <el-radio :label="false">选择已有的共享存储驱动</el-radio>
+              </el-radio-group>
+            </template>
+            <div v-show="!ruleForm.storage.default">
+              <el-form-item label="存储名称" label-width="85px" class="d2-mt d2-form-item">
+                <el-radio-group v-model="ruleForm.storage.storageClassName">
+                  <el-radio
+                    v-for="(item) in ruleForm.storage.opts"
+                    :key="item.name"
+                    :label="item.name"
+                  ></el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+      </el-form-item>
+      <el-form-item :label="''">
+        <div style="width:640px;text-align:center;">
+          <el-button type="primary" @click="submitForm('ruleForm')">配置就绪,开发安装</el-button>
+        </div>
+      </el-form-item>
+    </el-form>
+
+    <el-dialog
+      title="安装包下载失败，请上传安装包。"
+      :visible.sync="dialogVisible"
+      width="30%"
+      :before-close="handleClose"
+    >
+      <el-upload
+        class="upload-demo"
+        :action="api"
+        :data="uploadObj"
+        :on-preview="handlePreview"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        :before-upload="beforeUpload"
+        :on-success="handleSuccess"
+        :on-error="handleAvatarError"
+        multiple
+        :limit="1"
+        :on-exceed="handleExceed"
+        :file-list="fileList"
+        v-loading="upLoading"
+        element-loading-text="正在上传中。。。请稍等"
+      >
+        <el-button size="small" type="primary">点击上传</el-button>
+      </el-upload>
+      <span slot="footer" class="dialog-footer">
+        <el-button
+          :loading="upLoading"
+          size="small"
+          type="primary"
+          @click="submitForm('ruleForm')"
+        >下一步</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+var baseDomain = process.env.VUE_APP_API;
+if (baseDomain == "/") {
+  baseDomain = window.location.origin;
+}
+export default {
+  name: "clusterConfiguration",
+  data() {
+    return {
+      upLoading: false,
+      api: `${baseDomain}/uploads`,
+      uploadObj: { file_type: "install_file" },
+      dialogVisible: false,
+      loading: true,
+      ruleForm: null,
+      activeImageHubNames: "true",
+      activeregionDatabaseNames: "true",
+      activeUiDatabaseNames: "true",
+      activeETCDNames: "true",
+      activeStorageNames: "true",
+      setgatewayNodes: [],
+      fileList: [],
+      rules: {
+        name: [
+          { required: true, message: "请输入活动名称", trigger: "blur" },
+          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
+        ],
+        type: [
+          {
+            type: "array",
+            required: true,
+            message: "请至少选择一个活动性质",
+            trigger: "change"
+          }
+        ],
+        gatewayNodes: [
+          {
+            type: "array",
+            required: true,
+            message: "请至少选择一个网关安装节点",
+            trigger: "change"
+          }
+        ],
+        desc: [{ required: true, message: "请填写活动形式", trigger: "blur" }]
+      }
+    };
+  },
+  created() {
+    this.fetchClusterInfo();
+  },
+  methods: {
+    handleRemove(file, fileList) {
+      this.fileList = [];
+    },
+    handlePreview(file) {
+      console.log(file);
+    },
+    handleAvatarError() {
+      // this.$message.error("上传失败!");
+      this.upLoading = false;
+    },
+    handleExceed(files, fileList) {
+      this.$message.warning(
+        `当前限制选择 1 个文件，本次选择了 ${
+          files.length
+        } 个文件，共选择了 ${files.length + fileList.length} 个文件`
+      );
+      this.upLoading = false;
+    },
+    beforeUpload(file) {
+      this.upLoading = true;
+    },
+    beforeRemove(file, fileList) {
+      return this.$confirm(`确定移除 ${file.name}？`);
+    },
+    handleSuccess(response, file) {
+      this.upLoading = false;
+      this.$notify({
+        type: "success",
+        title: "上传",
+        message: "上传成功"
+      });
+    },
+    handleClose(done) {
+      this.$confirm("确认关闭？")
+        .then(_ => {
+          done();
+        })
+        .catch(_ => {});
+    },
+    changeImageHubRadio(value) {
+      this.activeImageHubNames = value + "";
+      if (!value) {
+        this.ruleForm.imageHub.domain = "";
+        this.ruleForm.imageHub.namespace = "";
+        this.ruleForm.imageHub.username = "";
+        this.ruleForm.imageHub.password = "";
+      }
+    },
+    changeregionDatabaseRadio(value) {
+      this.activeregionDatabaseNames = value + "";
+      if (!value) {
+        this.ruleForm.regionDatabase.host = "";
+        this.ruleForm.regionDatabase.port = "";
+        this.ruleForm.regionDatabase.username = "";
+        this.ruleForm.regionDatabase.password = "";
+      }
+    },
+    changeUiDatabaseRadio(value) {
+      this.activeUiDatabaseNames = value + "";
+      if (!value) {
+        this.ruleForm.uiDatabase.host = "";
+        this.ruleForm.uiDatabase.port = "";
+        this.ruleForm.uiDatabase.username = "";
+        this.ruleForm.uiDatabase.password = "";
+      }
+    },
+    changeETCDRadio(value) {
+      this.activeETCDNames = value + "";
+      if (!value) {
+        this.ruleForm.etcdConfig.endpoints = [""];
+        this.ruleForm.etcdConfig.default = false;
+        this.ruleForm.etcdConfig.certInfo.ca_file = "";
+        this.ruleForm.etcdConfig.certInfo.cert_file = "";
+        this.ruleForm.etcdConfig.certInfo.key_file = "";
+      }
+    },
+    changeStorageRadio(value) {
+      this.activeStorageNames = value + "";
+      if (!value) {
+        this.ruleForm.storage.storageClassName = "";
+      }
+    },
+    removeIP(index) {
+      this.ruleForm.gatewayIngressIPs.splice(index, 1);
+    },
+    addIP() {
+      this.ruleForm.gatewayIngressIPs.push("");
+    },
+    addEndpoints() {
+      this.ruleForm.etcdConfig.endpoints.push("");
+    },
+    removeEndpoints(index) {
+      this.ruleForm.etcdConfig.endpoints.splice(index, 1);
+    },
+    fetchClusterInfo() {
+      this.$store.dispatch("fetchClusterInfo").then(res => {
+        if (res && res.data) {
+          this.loading = false;
+          this.ruleForm = res.data;
+
+          let arr = [];
+          res.data.gatewayNodes &&
+            res.data.gatewayNodes.length > 0 &&
+            res.data.gatewayNodes.map(item => {
+              const { selected, nodeIP } = item;
+              if (selected) {
+                arr.push(nodeIP);
+              }
+            });
+          this.ruleForm.setgatewayNodes = arr;
+          this.setgatewayNodes = arr;
+        }
+      });
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          let arr =[]
+         this.ruleForm.setgatewayNodes.length>0&&this.ruleForm.setgatewayNodes.map((item)=>{
+            arr.push({nodeIP:item})
+          })
+          this.ruleForm.gatewayNodes =arr
+          this.loading = true;
+          this.$store
+            .dispatch("fixClusterInfo", this.ruleForm)
+            .then(res => {
+              if (res && res.code == 200) {
+                this.$store
+                  .dispatch("addCluster", this.ruleForm)
+                  .then(en => {
+                    if (en && en.code == 200) {
+                      this.loading = false;
+                      this.dialogVisible = false;
+                      this.$emit("onResults", this.ruleForm);
+                    } else {
+                      this.loading = false;
+                      this.dialogVisible = true;
+                    }
+                  })
+                  .catch(err => {
+                    console.log(err);
+                  });
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            });
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+.upload-demo {
+  text-align: center;
+}
+.d2-w-20 {
+  width: 20px;
+  display: inline-block;
+  text-align: center;
+}
+.setbr {
+  border: 1px solid #dcdfe6;
+}
+.d2-w-640 {
+  width: 640px !important;
+}
+.cen {
+  display: flex;
+  align-items: center;
+}
+.d2-ml-35 {
+  margin-left: 35px;
+}
+
+.clues {
+  font-family: PingFangSC;
+  font-size: 16px;
+  color: #cccccc;
+}
+.icon-f-22 {
+  font-size: 22px;
+}
+.d2-ml-16 {
+  margin-left: 16px;
+}
+.addbr {
+  font-size: 21px;
+  color: #606266;
+  height: 39px;
+  line-height: 39px;
+  border: 1px solid #dcdfe6;
+  display: flex;
+  align-items: center;
+}
+</style>
+<style lang="scss" >
+.d2-form-item {
+  .el-form-item__label {
+    line-height: 25px;
+  }
+  .el-form-item__content {
+    line-height: 25px;
+  }
+}
+.d2-input_inner {
+  width: 250px;
+  .el-input__inner {
+    height: 25px;
+    line-height: 25px;
+  }
+}
+
+.d2-input_inner_url {
+  .el-input__inner {
+    height: 25px;
+    line-height: 25px;
+  }
+}
+.d2-w-150 {
+  width: 150px;
+}
+.d2-w-80 {
+  width: 80px;
+}
+
+.clcolor {
+  .el-collapse-item__header {
+    border-color: #dcdfe6 !important;
+    height: 39px;
+    line-height: 39px;
+    width: 640px !important;
+  }
+  .el-collapse-item__wrap {
+    border-bottom: 1px solid #dcdfe6 !important;
+  }
+}
+.cr_checkbox {
+  padding: 2px 20px 2px 10px !important;
+  height: 25px !important;
+  margin-top: 8px !important;
+  .el-checkbox__input {
+    display: none !important;
+  }
+}
+</style>
+

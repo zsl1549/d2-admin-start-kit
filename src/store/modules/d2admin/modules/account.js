@@ -63,7 +63,7 @@ export default {
         await dispatch('d2admin/user/set', {}, { root: true })
         // 跳转路由
         router.push({
-          name: 'login'
+          name: 'index'
         })
       }
       // 判断是否需要确认

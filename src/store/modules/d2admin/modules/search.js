@@ -6,10 +6,10 @@ export default {
     // 搜索面板激活状态
     active: false,
     // 快捷键
-    hotkey: {
-      open: setting.hotkey.search.open,
-      close: setting.hotkey.search.close
-    },
+    // hotkey: {
+    //   open: setting.hotkey.search.open,
+    //   close: setting.hotkey.search.close
+    // },
     // 所有可以搜索的页面
     pool: []
   },
