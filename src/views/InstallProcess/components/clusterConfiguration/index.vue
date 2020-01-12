@@ -6,6 +6,7 @@
       :rules="rules"
       v-loading="loading"
       @submit.native.prevent
+      hide-required-asterisk
       ref="ruleForm"
       label-width="125px"
       class="demo-ruleForm"
@@ -169,12 +170,8 @@
         </el-collapse>
         <div class="clues">Rainbon各组件依赖ETCD服务，若不提供则默认安装</div>
       </el-form-item>
-      <el-form-item
-        label="网关安装节点"
-        prop="gatewayNodes"
-        :rules="[{ required: true, message: '请至少选择一个网关安装节点'},{ type: 'array', trigger: 'change' , message: '请至少选择一个网关安装节点'}]"
-      >
-        <el-checkbox-group v-model="ruleForm.setgatewayNodes">
+      <el-form-item label="网关安装节点" prop="nodes">
+        <el-checkbox-group v-model="setgatewayNodes">
           <el-checkbox
             v-for="(item, index) in ruleForm.gatewayNodes"
             :key="index"
@@ -282,6 +279,13 @@ if (baseDomain == "/") {
 export default {
   name: "clusterConfiguration",
   data() {
+    var validatePass2 = (rule, value, callback) => {
+      if (this.setgatewayNodes.length === 0) {
+        callback(new Error("请至少选择一个网关安装节点"));
+      } else {
+        callback();
+      }
+    };
     return {
       upLoading: false,
       api: `${baseDomain}/uploads`,
@@ -297,27 +301,14 @@ export default {
       setgatewayNodes: [],
       fileList: [],
       rules: {
-        name: [
-          { required: true, message: "请输入活动名称", trigger: "blur" },
-          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
-        ],
-        type: [
+        nodes: [
           {
+            validator: validatePass2,
             type: "array",
             required: true,
-            message: "请至少选择一个活动性质",
             trigger: "change"
           }
-        ],
-        gatewayNodes: [
-          {
-            type: "array",
-            required: true,
-            message: "请至少选择一个网关安装节点",
-            trigger: "change"
-          }
-        ],
-        desc: [{ required: true, message: "请填写活动形式", trigger: "blur" }]
+        ]
       }
     };
   },
@@ -434,7 +425,6 @@ export default {
                 arr.push(nodeIP);
               }
             });
-          this.ruleForm.setgatewayNodes = arr;
           this.setgatewayNodes = arr;
         }
       });
@@ -442,11 +432,12 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          let arr =[]
-         this.ruleForm.setgatewayNodes.length>0&&this.ruleForm.setgatewayNodes.map((item)=>{
-            arr.push({nodeIP:item})
-          })
-          this.ruleForm.gatewayNodes =arr
+          let arr = [];
+          this.setgatewayNodes.length > 0 &&
+            this.setgatewayNodes.map(item => {
+              arr.push({ nodeIP: item });
+            });
+          this.ruleForm.gatewayNodes = arr;
           this.loading = true;
           this.$store
             .dispatch("fixClusterInfo", this.ruleForm)
