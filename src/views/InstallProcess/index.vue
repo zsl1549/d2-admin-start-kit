@@ -1,6 +1,6 @@
 <template>
   <d2-container type="full">
-    <div class="d2-ml-115">
+    <div class="d2-ml-115 d2-w-1100">
       <el-collapse class="clbr" v-model="activeName" accordion>
         <el-collapse-item name="cluster" class="installationStepTitle" title="集群安装配置">
           <cluster-configuration @onResults="handlePerform('startrRsults')" class="d2-mt"></cluster-configuration>
@@ -53,6 +53,10 @@ export default {
 }
 .d2-ml-115 {
   margin-left: 115px;
+}
+.d2-w-1100{
+  width: 1100px;
+  margin: 0 auto;
 }
 </style>
 <style lang="scss" >

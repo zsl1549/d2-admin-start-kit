@@ -247,24 +247,23 @@
         :on-preview="handlePreview"
         :on-remove="handleRemove"
         :before-remove="beforeRemove"
-        :before-upload="beforeUpload"
         :on-success="handleSuccess"
         :on-error="handleAvatarError"
         multiple
         :limit="1"
         :on-exceed="handleExceed"
         :file-list="fileList"
-        v-loading="upLoading"
         element-loading-text="正在上传中。。。请稍等"
       >
         <el-button size="small" type="primary">点击上传</el-button>
       </el-upload>
-      <span slot="footer" class="dialog-footer">
+      <el-progress v-show="showProgress" :percentage="progressLength" :stroke-width="2"></el-progress>
+      <span slot="footer" class="dialog-footer" v-show="upLoading">
         <el-button
-          :loading="upLoading"
           size="small"
           type="primary"
-          @click="submitForm('ruleForm')"
+          :loading="nextLoading"
+          @click="submitForm('ruleForm','next')"
         >下一步</el-button>
       </span>
     </el-dialog>
@@ -287,6 +286,9 @@ export default {
       }
     };
     return {
+      progressLength: 0,
+      showProgress: false,
+      nextLoading: false,
       upLoading: false,
       api: `${baseDomain}/uploads`,
       uploadObj: { file_type: "install_file" },
@@ -323,7 +325,6 @@ export default {
       console.log(file);
     },
     handleAvatarError() {
-      // this.$message.error("上传失败!");
       this.upLoading = false;
     },
     handleExceed(files, fileList) {
@@ -334,19 +335,12 @@ export default {
       );
       this.upLoading = false;
     },
-    beforeUpload(file) {
-      this.upLoading = true;
-    },
+
     beforeRemove(file, fileList) {
       return this.$confirm(`确定移除 ${file.name}？`);
     },
     handleSuccess(response, file) {
-      this.upLoading = false;
-      this.$notify({
-        type: "success",
-        title: "上传",
-        message: "上传成功"
-      });
+      this.upLoading = true;
     },
     handleClose(done) {
       this.$confirm("确认关闭？")
@@ -429,7 +423,7 @@ export default {
         }
       });
     },
-    submitForm(formName) {
+    submitForm(formName, next) {
       this.$refs[formName].validate(valid => {
         if (valid) {
           let arr = [];
@@ -439,6 +433,7 @@ export default {
             });
           this.ruleForm.gatewayNodes = arr;
           this.loading = true;
+          this.nextLoading = true;
           this.$store
             .dispatch("fixClusterInfo", this.ruleForm)
             .then(res => {
@@ -448,16 +443,21 @@ export default {
                   .then(en => {
                     if (en && en.code == 200) {
                       this.loading = false;
+                      this.nextLoading = false;
                       this.dialogVisible = false;
                       this.$emit("onResults", this.ruleForm);
                     } else {
                       this.loading = false;
+                      this.nextLoading = false;
                       this.dialogVisible = true;
                     }
                   })
                   .catch(err => {
                     console.log(err);
                   });
+              } else {
+                this.nextLoading = false;
+                this.loading = false;
               }
             })
             .catch(err => {

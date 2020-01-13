@@ -108,6 +108,7 @@ export default {
   },
   created() {
     this.fetchClusterInstallResults();
+    this.fetchClusterInstallResultsState();
   },
   beforeDestroy() {
     this.timer && clearInterval(this.timer);
@@ -117,7 +118,7 @@ export default {
     format(percentage) {
       return "";
     },
-    fetchClusterInstallResults(perform) {
+    fetchClusterInstallResults() {
       this.$store.dispatch("fetchClusterInstallResults").then(res => {
         if (res) {
           this.loading = false;
@@ -130,16 +131,7 @@ export default {
             );
             if (resuitsList.length > 0) {
               this.timer = setTimeout(() => {
-                this.fetchClusterInstallResults(true);
-
-                let resultsStateList = res.data.filter(
-                  item =>
-                    item.stepName === "step_install_component" &&
-                    item.status === "status_waiting"
-                );
-                if (!perform && resultsStateList.length > 0) {
-                  this.fetchClusterInstallResultsState();
-                }
+                this.fetchClusterInstallResults();
               }, 8000);
             }
           }
@@ -150,16 +142,9 @@ export default {
       this.$store.dispatch("fetchClusterInstallResultsState").then(res => {
         if (res && res.code === 200) {
           this.componentList = res.data;
-          if (res.data && res.data.length > 0) {
-            let resuitsState = res.data.filter(
-              item => item.replicas != item.readyReplicas
-            );
-            if (resuitsState.length > 0) {
-              this.timers = setTimeout(() => {
-                this.fetchClusterInstallResultsState();
-              }, 8000);
-            }
-          }
+          this.timers = setTimeout(() => {
+            this.fetchClusterInstallResultsState();
+          }, 8000);
         }
       });
     }

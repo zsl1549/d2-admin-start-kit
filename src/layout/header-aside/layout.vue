@@ -51,7 +51,7 @@
       <!-- 下面 主体 -->
       <div class="d2-theme-container" flex-box="1" flex>
         <!-- 主体 侧边栏 -->
-        <div
+        <!-- <div
           flex-box="0"
           ref="aside"
           class="d2-theme-container-aside"
@@ -61,7 +61,7 @@
           }"
         >
           <d2-menu-side />
-        </div>
+        </div> -->
         <!-- 主体 -->
         <div class="d2-theme-container-main" flex-box="1" flex>
           <!-- 搜索 -->
