@@ -10,8 +10,20 @@
           class="installationStepTitle"
           title="安装"
           name="startrRsults"
+          @onResults="handlePerform('rsultSucess')"
         >
           <install-results></install-results>
+        </el-collapse-item>
+        <el-collapse-item
+          v-if="rsultSucessShow"
+          name="rsultSucess"
+          class="installationStepTitle"
+          title="结果"
+        >
+          <div class="installSuccess dr-mt">
+            <span class="el-icon-circle-check"></span>恭喜你，安装成功
+          </div>
+          <router-link to tag="p" class="successLink">wwww.hyf521.com</router-link>
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -33,7 +45,8 @@ export default {
   data() {
     return {
       activeName: "cluster",
-      resultShow: false
+      resultShow: false,
+      rsultSucessShow: false
     };
   },
   created() {
@@ -43,6 +56,9 @@ export default {
     handlePerform(name) {
       this.activeName = name;
       this.resultShow = true;
+      if (name && name === "rsultSucess") {
+        this.rsultSucessShow = true;
+      }
     }
   }
 };
@@ -54,9 +70,28 @@ export default {
 .d2-ml-115 {
   margin-left: 115px;
 }
-.d2-w-1100{
+.el-icon-circle-check {
+  color: #67c23a;
+  font-size: 50px;
+  margin-right: 20px;
+}
+.d2-w-1100 {
   width: 1100px;
   margin: 0 auto;
+}
+.successLink {
+  width: 767px;
+  text-align: center;
+  font-size: 28px;
+  margin: 0;
+  padding: 0;
+}
+.installSuccess {
+  font-size: 40px;
+  width: 767px;
+  margin-top: 20px;
+  text-align: center;
+  color: #67c23a;
 }
 </style>
 <style lang="scss" >

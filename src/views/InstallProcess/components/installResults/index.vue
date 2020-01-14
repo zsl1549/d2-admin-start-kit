@@ -133,6 +133,8 @@ export default {
               this.timer = setTimeout(() => {
                 this.fetchClusterInstallResults();
               }, 8000);
+            }else{
+              this.$emit("onResults");
             }
           }
         }
