@@ -255,7 +255,10 @@
         :file-list="fileList"
         element-loading-text="正在上传中。。。请稍等"
       >
-        <el-button size="small" type="primary">点击上传</el-button>
+        <el-button size="small" type="primary">
+          上传
+          <i class="el-icon-upload el-icon--right"></i>
+        </el-button>
       </el-upload>
       <el-progress v-show="showProgress" :percentage="progressLength" :stroke-width="2"></el-progress>
       <span slot="footer" class="dialog-footer" v-show="upLoading">
@@ -409,7 +412,13 @@ export default {
         if (res && res.data) {
           this.loading = false;
           this.ruleForm = res.data;
-
+          if (
+            !res.data.gatewayIngressIPs ||
+            (res.data.gatewayIngressIPs &&
+              res.data.gatewayIngressIPs.length === 0)
+          ) {
+            this.ruleForm.gatewayIngressIPs = [""];
+          }
           let arr = [];
           res.data.gatewayNodes &&
             res.data.gatewayNodes.length > 0 &&
@@ -442,15 +451,21 @@ export default {
                   .dispatch("addCluster", this.ruleForm)
                   .then(en => {
                     if (en && en.code == 200) {
-                      this.loading = false;
-                      this.nextLoading = false;
                       this.dialogVisible = false;
-                      this.$emit("onResults", this.ruleForm);
+                      this.$emit("onResults");
+                    } else if (en && en.code == 1002) {
+                      this.dialogVisible = false;
+                      this.$notify({
+                        type: "warning",
+                        title: "下载流程正在进行中",
+                        message: "请稍后再试"
+                      });
+                      this.$emit("onResults");
                     } else {
-                      this.loading = false;
-                      this.nextLoading = false;
                       this.dialogVisible = true;
                     }
+                    this.nextLoading = false;
+                    this.loading = false;
                   })
                   .catch(err => {
                     console.log(err);

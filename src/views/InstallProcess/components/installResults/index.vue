@@ -17,8 +17,13 @@
                 ></i>
                 <i v-else class="el-icon-refresh d2-animation success d2-f-20"></i>
               </el-col>
-              <el-col :span="24" class="description">{{item.message}}</el-col>
-              <el-progress :percentage="item.progress"></el-progress>
+              <el-progress :percentage="item.progress" class="d2-h-50 d2-mb"></el-progress>
+              <div class="d2-mt" v-show="(item.reason ||item.message )">
+                <el-col v-show="item.reason" :span="2" class="description errorTitleColor">原因:</el-col>
+                <el-col :span="22" class="description">{{item.reason}}</el-col>
+                <el-col v-show="item.message" :span="2" class="description errorTitleColor">消息:</el-col>
+                <el-col :span="22" class="description">{{item.message}}</el-col>
+              </div>
             </el-row>
           </el-card>
 
@@ -37,37 +42,58 @@
                   ></i>
                   <i v-else class="el-icon-refresh d2-animation success d2-f-20"></i>
                 </el-col>
-                <el-col :span="24" class="description">{{item.message}}</el-col>
-                <el-progress :percentage="item.progress"></el-progress>
+                <el-progress :percentage="item.progress" class="d2-h-50 d2-mb"></el-progress>
+                <div v-show="(item.reason ||item.message )">
+                  <el-col v-show="item.reason" :span="2" class="description errorTitleColor">原因:</el-col>
+                  <el-col :span="22" class="description">{{item.reason}}</el-col>
+                  <el-col v-show="item.message" :span="2" class="description errorTitleColor">消息:</el-col>
+                  <el-col :span="22" class="description">{{item.message}}</el-col>
+                </div>
               </el-row>
             </div>
-            <div class="text item">
+            <div class="text item" v-show="componentList">
               <el-row :gutter="12" class="d2-mb">
                 <el-col :span="14" class="d2-f-16">组件名称</el-col>
                 <el-col :span="5" class="d2-f-16 d2-text-cen">组件副本数</el-col>
                 <el-col :span="5" class="d2-f-16 d2-text-cen">已就绪副本数</el-col>
               </el-row>
 
-              <el-row :gutter="12" v-for="item in componentList" :key="item.name">
-                <el-col :span="14" class="d2-f-14">{{item.name}}</el-col>
-                <el-col :span="5" class="d2-f-14 d2-text-cen">{{item.replicas}}</el-col>
-                <el-col :span="5" class="d2-f-14 d2-text-cen">{{item.readyReplicas}}</el-col>
-
-                <el-col :span="24" v-for="items in item.podStatus" :key="items.name">
-                  <el-col :span="14" class="d2-f-14 descColor">{{items.name}}</el-col>
-                  <el-col
-                    :span="5"
-                    class="d2-f-14 d2-text-cen"
-                    :style="{
+              <el-collapse accordion>
+                <el-collapse-item
+                  v-for="item in componentList"
+                  :key="item.name"
+                  class="componentTitle"
+                >
+                  <template slot="title">
+                    <el-col :span="14" class="d2-f-14">{{item.name}}</el-col>
+                    <el-col :span="5" class="d2-f-14 d2-text-cen">{{item.replicas}}</el-col>
+                    <el-col :span="5" class="d2-f-14 d2-text-cen">{{item.readyReplicas}}</el-col>
+                  </template>
+                  <div>
+                    <div v-for="items in item.podStatus" :key="items.name">
+                      <div class="componentBox">
+                        <el-col :span="4" class="d2-f-14 minComponentColor">名称</el-col>
+                        <el-col :span="20" class="d2-f-14 descColor">{{items.name}}</el-col>
+                      </div>
+                      <div class="componentBox">
+                        <el-col :span="4" class="d2-f-14 minComponentColor">阶段</el-col>
+                        <el-col
+                          :span="20"
+                          class="d2-f-14 descColor"
+                          :style="{
                       color:componentColor[items.phase]
                       }"
-                  >{{items.phase}}</el-col>
-                  <el-col :span="5" class="d2-f-14 descColor d2-text-cen">{{items.reason}}</el-col>
-                </el-col>
+                        >{{items.phase}}</el-col>
+                      </div>
 
-                <!-- <el-col :span="24" class="description">{{item.message}}</el-col> -->
-                <!-- <el-progress :percentage="item.progress"></el-progress> -->
-              </el-row>
+                      <div class="componentBox" v-show="items.reason">
+                        <el-col :span="4" class="d2-f-14 minComponentColor">原因</el-col>
+                        <el-col :span="20" class="d2-f-14 descColor">{{items.reason}}</el-col>
+                      </div>
+                    </div>
+                  </div>
+                </el-collapse-item>
+              </el-collapse>
             </div>
           </el-card>
         </el-col>
@@ -80,17 +106,16 @@ export default {
   name: "installResults",
   data() {
     return {
+      num: 0,
       installList: [],
       loading: true,
       phaseMap: {
         step_setting: "配置环境",
         step_download: "下载安装包",
-        step_prepare_storage: "准备存储",
-        step_prepare_image_hub: "准备镜像仓库",
+        step_prepare_infrastructure: "准备基础设施",
         step_unpacke: "解压安装包",
-        step_load_image: "加载镜像",
-        step_push_image: "上传镜像",
-        step_install_component: "安装基础服务"
+        step_handle_image: "处理镜像",
+        step_install_component: "安装Rainbond组件"
       },
       componentColor: {
         Pending: "rgba(0, 0, 0, 0.45)",
@@ -133,7 +158,7 @@ export default {
               this.timer = setTimeout(() => {
                 this.fetchClusterInstallResults();
               }, 8000);
-            }else{
+            } else {
               this.$emit("onResults");
             }
           }
@@ -144,6 +169,11 @@ export default {
       this.$store.dispatch("fetchClusterInstallResultsState").then(res => {
         if (res && res.code === 200) {
           this.componentList = res.data;
+          this.num += 1;
+          this.timers = setTimeout(() => {
+            this.fetchClusterInstallResultsState();
+          }, 8000);
+        } else if (this.num <= 3) {
           this.timers = setTimeout(() => {
             this.fetchClusterInstallResultsState();
           }, 8000);
@@ -154,11 +184,25 @@ export default {
 };
 </script>
 <style rel="stylesheet/scss" lang="scss" scoped>
+.d2-h-50 {
+  height: 50px;
+  line-height: 50px;
+}
+.componentBox {
+  min-height: 39px;
+  line-height: 39px;
+}
+.minComponentColor {
+  color: #99a9bf !important;
+}
+.errorTitleColor {
+  color: #303133 !important;
+}
 .d2-text-cen {
   text-align: center;
 }
 .descColor {
-  color: rgba(0, 0, 0, 0.45);
+  color: #606266;
 }
 .d2-f-14 {
   font-size: 14px;
@@ -198,7 +242,7 @@ export default {
     font-size: 14px;
     line-height: 22px;
     color: rgba(0, 0, 0, 0.45);
-    margin-bottom: 24px;
+    margin: 5px 0;
   }
 
   .extra {
@@ -206,6 +250,17 @@ export default {
     padding: 24px 40px;
     border-radius: rgba(0, 0, 0, 0.45);
     text-align: left;
+  }
+}
+</style>
+<style lang="scss" >
+.componentTitle {
+  .el-collapse-item__header {
+    border-bottom: 1px solid #ebeef5 !important;
+    width: 100% !important;
+  }
+  .el-collapse-item__header:hover {
+    background: #f5f7fa;
   }
 }
 </style>
