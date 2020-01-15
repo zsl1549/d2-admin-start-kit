@@ -62,7 +62,7 @@
                   class="d2-input_inner_url d2-w-150"
                 ></el-input>
                 <span class="d2-w-20">:</span>
-                <el-input v-model="ruleForm.regionDatabase.port" class="d2-input_inner_url d2-w-80"></el-input>
+                <InputNumber v-model="ruleForm.regionDatabase.port" class="d2-input_inner_url d2-w-80"></InputNumber>
               </el-form-item>
               <el-form-item label="账户" label-width="85px" class="d2-mt d2-form-item">
                 <el-input v-model="ruleForm.regionDatabase.username" class="d2-input_inner"></el-input>
@@ -93,7 +93,7 @@
               <el-form-item label="地址" label-width="85px" class="d2-mt d2-form-item">
                 <el-input v-model="ruleForm.uiDatabase.host" class="d2-input_inner_url d2-w-150"></el-input>
                 <span class="d2-w-20">:</span>
-                <el-input v-model="ruleForm.uiDatabase.port" class="d2-input_inner_url d2-w-80"></el-input>
+                <InputNumber v-model="ruleForm.uiDatabase.port" class="d2-input_inner_url d2-w-80"></InputNumber>
               </el-form-item>
               <el-form-item label="账户" label-width="85px" class="d2-mt d2-form-item">
                 <el-input v-model="ruleForm.uiDatabase.username" class="d2-input_inner"></el-input>
@@ -304,7 +304,7 @@ export default {
       this.activeregionDatabaseNames = value + "";
       if (!value) {
         this.ruleForm.regionDatabase.host = "";
-        this.ruleForm.regionDatabase.port = "";
+        this.ruleForm.regionDatabase.port = 0;
         this.ruleForm.regionDatabase.username = "";
         this.ruleForm.regionDatabase.password = "";
       }
@@ -313,7 +313,7 @@ export default {
       this.activeUiDatabaseNames = value + "";
       if (!value) {
         this.ruleForm.uiDatabase.host = "";
-        this.ruleForm.uiDatabase.port = "";
+        this.ruleForm.uiDatabase.port = 0;
         this.ruleForm.uiDatabase.username = "";
         this.ruleForm.uiDatabase.password = "";
       }
@@ -382,6 +382,9 @@ export default {
           this.ruleForm.gatewayNodes = arr;
           this.loading = true;
           this.nextLoading = true;
+          this.ruleForm.regionDatabase.port = Number(
+            this.ruleForm.regionDatabase.port
+          );
           this.$store
             .dispatch("fixClusterInfo", this.ruleForm)
             .then(res => {
