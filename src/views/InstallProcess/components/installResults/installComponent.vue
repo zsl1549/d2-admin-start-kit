@@ -15,7 +15,7 @@
     <div v-show="(item.reason ||item.message )">
       <el-col v-show="item.reason" :span="24" class="description cen errorTitleColor">
         <el-button
-          v-show="item.stepName==='step_download'&&item.status==='status_failed'"
+          v-show="item.reason"
           size="small"
           type="primary"
           @click="submit"

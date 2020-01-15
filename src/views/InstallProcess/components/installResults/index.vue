@@ -72,7 +72,7 @@
     <Uploads
       :nextLoading="nextLoading"
       :dialogVisible="dialogVisible"
-      @onSubmitForm="dialogVisible=false"
+      @onSubmitForm="onSubmitForm"
     />
   </div>
 </template>
@@ -127,6 +127,10 @@ export default {
     format(percentage) {
       return "";
     },
+    onSubmitForm() {
+      this.dialogVisible = false;
+      this.fetchClusterInstallResults();
+    },
     fetchClusterInstallResults() {
       this.$store.dispatch("fetchClusterInstallResults").then(res => {
         if (res) {
@@ -134,6 +138,13 @@ export default {
           this.installList = res.data;
           let arrs = res.data;
           if (arrs && arrs.length > 0) {
+            arrs.map(item => {
+              const { stepName, status } = item;
+              if (stepName === "step_download" && status === "status_failed") {
+                this.dialogVisible = true;
+                this.timer && clearInterval(this.timer);
+              }
+            });
             let resuitsList = arrs.filter(
               item =>
                 item.status != "status_waiting" &&
