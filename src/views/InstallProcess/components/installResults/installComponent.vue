@@ -13,9 +13,9 @@
     </el-col>
     <el-progress :percentage="item.progress" class="d2-h-50 d2-mb"></el-progress>
     <div v-show="(item.reason ||item.message )">
-      <el-col v-show="item.reason" :span="24" class="description errorTitleColor">
+      <el-col v-show="item.reason" :span="24" class="description cen errorTitleColor">
         <el-button
-          v-show="item.stepName==='step_download'&&item.stepName==='status_failed'"
+          v-show="item.stepName==='step_download'&&item.status==='status_failed'"
           size="small"
           type="primary"
           @click="submit"
@@ -70,6 +70,9 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+.cen {
+  text-align: center;
+}
 .errorTitleColor {
   color: #303133 !important;
 }
