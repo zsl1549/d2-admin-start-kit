@@ -2,16 +2,15 @@
   <d2-container type="full">
     <div class="d2-ml-115 d2-w-1100">
       <el-collapse class="clbr" v-model="activeName" accordion>
-        <el-collapse-item name="cluster" class="installationStepTitle" title="集群安装配置">
-          <cluster-configuration @onResults="handlePerform('startrRsults')" class="d2-mt"></cluster-configuration>
-        </el-collapse-item>
         <el-collapse-item
-          v-if="resultShow"
+          name="rsultSucess"
           class="installationStepTitle"
-          title="安装"
-          name="startrRsults"
+          title="访问地址"
         >
-          <install-results></install-results>
+          <div class="installSuccess dr-mt">
+            <span class="el-icon-circle-check"></span>恭喜你，安装成功
+          </div>
+          <router-link to tag="p" class="successLink d2-mt">wwww.hyf521.com</router-link>
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -19,29 +18,12 @@
 </template>
 
 <script>
-import ClusterConfiguration from "./components/clusterConfiguration";
-import InstallResults from "./components/installResults";
-
 export default {
-  name: "InstallProcess",
-  components: {
-    ClusterConfiguration,
-    InstallResults
-  },
+  name: "successfulInstallation",
   data() {
     return {
-      activeName: "cluster",
-      resultShow: false,
+      activeName: "rsultSucess",
     };
-  },
-  created() {
-    document.documentElement.scrollTop = 0;
-  },
-  methods: {
-    handlePerform(name) {
-      this.activeName = name;
-      this.resultShow = true;
-    }
   }
 };
 </script>
@@ -54,12 +36,26 @@ export default {
 }
 .el-icon-circle-check {
   color: #67c23a;
-  font-size: 50px;
+  font-size: 22px;
   margin-right: 20px;
 }
 .d2-w-1100 {
   width: 1100px;
   margin: 0 auto;
+}
+.successLink {
+  text-align: center;
+  font-size: 18px;
+  margin: 0;
+  padding: 0;
+  color: #409EFF;
+}
+.installSuccess {
+  font-size: 22px;
+  margin-top: 20px;
+  line-height: 22px;
+  text-align: center;
+  color: #67c23a;
 }
 </style>
 <style lang="scss" >

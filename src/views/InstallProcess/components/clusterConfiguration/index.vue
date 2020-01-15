@@ -20,7 +20,7 @@
                 v-model="ruleForm.imageHub.default"
                 @change="changeImageHubRadio"
               >
-                <el-radio :label="true">新安装默认镜像仓库</el-radio>
+                <el-radio class="d2-w-150" :label="true">新安装默认镜像仓库</el-radio>
                 <el-radio :label="false">提供已有的镜像仓库</el-radio>
               </el-radio-group>
             </template>
@@ -51,7 +51,7 @@
                 v-model="ruleForm.regionDatabase.default"
                 @change="changeregionDatabaseRadio"
               >
-                <el-radio :label="true">新安装数据库</el-radio>
+                <el-radio class="d2-w-150" :label="true">新安装数据库</el-radio>
                 <el-radio :label="false">提供已有的数据仓库</el-radio>
               </el-radio-group>
             </template>
@@ -85,7 +85,7 @@
                 v-model="ruleForm.uiDatabase.default"
                 @change="changeUiDatabaseRadio"
               >
-                <el-radio :label="true">新安装UI数据库</el-radio>
+                <el-radio class="d2-w-150" :label="true">新安装UI数据库</el-radio>
                 <el-radio :label="false">提供已有的UI数据库</el-radio>
               </el-radio-group>
             </template>
@@ -115,7 +115,7 @@
                 v-model="ruleForm.etcdConfig.default"
                 @change="changeETCDRadio"
               >
-                <el-radio :label="true">新安装ETCD</el-radio>
+                <el-radio class="d2-w-150" :label="true">新安装ETCD</el-radio>
                 <el-radio :label="false">提供已有的ETCD</el-radio>
               </el-radio-group>
             </template>
@@ -142,25 +142,29 @@
               <el-form-item label="TLS" label-width="85px" class="d2-mt d2-form-item">
                 <el-switch v-model="ruleForm.etcdConfig.useTLS"></el-switch>
               </el-form-item>
+
               <div v-show="ruleForm.etcdConfig.useTLS">
                 <el-form-item label="机构证书" label-width="85px" class="d2-mt d2-form-item">
                   <el-input
+                    type="textarea"
                     v-if="ruleForm.etcdConfig.certInfo"
-                    v-model="ruleForm.etcdConfig.certInfo.ca_file"
+                    v-model="ruleForm.etcdConfig.certInfo.caFile"
                     class="d2-input_inner"
                   ></el-input>
                 </el-form-item>
                 <el-form-item label="证书" label-width="85px" class="d2-mt d2-form-item">
                   <el-input
+                    type="textarea"
                     v-if="ruleForm.etcdConfig.certInfo"
-                    v-model="ruleForm.etcdConfig.certInfo.cert_file"
+                    v-model="ruleForm.etcdConfig.certInfo.certFile"
                     class="d2-input_inner"
                   ></el-input>
                 </el-form-item>
                 <el-form-item label="证书私钥" label-width="85px" class="d2-mt d2-form-item">
                   <el-input
+                    type="textarea"
                     v-if="ruleForm.etcdConfig.certInfo"
-                    v-model="ruleForm.etcdConfig.certInfo.key_file"
+                    v-model="ruleForm.etcdConfig.certInfo.keyFile"
                     class="d2-input_inner"
                   ></el-input>
                 </el-form-item>
@@ -188,7 +192,7 @@
         <div class="clues">默认域名是指Rainbond 为HTTP类应用动态分配的多级域名，默认域名在非离线安装模式下将动态创建公网DNS泛解析记录</div>
       </el-form-item>
       <el-form-item :label="'网关外网IP'">
-        <div v-for="(item, indexs) in ruleForm.gatewayIngressIPs" :key="item" class="cen">
+        <div v-for="(item, indexs) in ruleForm.gatewayIngressIPs" :key="indexs" class="cen">
           <el-input v-model="ruleForm.gatewayIngressIPs[indexs]" class="d2-input_inner"></el-input>
           <i class="el-icon-circle-plus-outline icon-f-22 d2-ml-16" @click="addIP"></i>
           <i
@@ -209,7 +213,7 @@
                 class="d2-ml-35"
                 @change="changeStorageRadio"
               >
-                <el-radio :label="true">新部署NFS-Server</el-radio>
+                <el-radio class="d2-w-150" :label="true">新部署NFS-Server</el-radio>
                 <el-radio :label="false">选择已有的共享存储驱动</el-radio>
               </el-radio-group>
             </template>
@@ -234,52 +238,22 @@
       </el-form-item>
     </el-form>
 
-    <el-dialog
-      title="安装包下载失败，请上传安装包。"
-      :visible.sync="dialogVisible"
-      width="30%"
-      :before-close="handleClose"
-    >
-      <el-upload
-        class="upload-demo"
-        :action="api"
-        :data="uploadObj"
-        :on-preview="handlePreview"
-        :on-remove="handleRemove"
-        :before-remove="beforeRemove"
-        :on-success="handleSuccess"
-        :on-error="handleAvatarError"
-        multiple
-        :limit="1"
-        :on-exceed="handleExceed"
-        :file-list="fileList"
-        element-loading-text="正在上传中。。。请稍等"
-      >
-        <el-button size="small" type="primary">
-          上传
-          <i class="el-icon-upload el-icon--right"></i>
-        </el-button>
-      </el-upload>
-      <el-progress v-show="showProgress" :percentage="progressLength" :stroke-width="2"></el-progress>
-      <span slot="footer" class="dialog-footer" v-show="upLoading">
-        <el-button
-          size="small"
-          type="primary"
-          :loading="nextLoading"
-          @click="submitForm('ruleForm','next')"
-        >下一步</el-button>
-      </span>
-    </el-dialog>
+    <Uploads
+      :nextLoading="nextLoading"
+      :dialogVisible="dialogVisible"
+      @onSubmitForm="submitForm('ruleForm',true)"
+    />
   </div>
 </template>
 
 <script>
-var baseDomain = process.env.VUE_APP_API;
-if (baseDomain == "/") {
-  baseDomain = window.location.origin;
-}
+import Uploads from "../upload";
+
 export default {
   name: "clusterConfiguration",
+  components: {
+    Uploads
+  },
   data() {
     var validatePass2 = (rule, value, callback) => {
       if (this.setgatewayNodes.length === 0) {
@@ -289,12 +263,8 @@ export default {
       }
     };
     return {
-      progressLength: 0,
-      showProgress: false,
       nextLoading: false,
       upLoading: false,
-      api: `${baseDomain}/uploads`,
-      uploadObj: { file_type: "install_file" },
       dialogVisible: false,
       loading: true,
       ruleForm: null,
@@ -321,37 +291,6 @@ export default {
     this.fetchClusterInfo();
   },
   methods: {
-    handleRemove(file, fileList) {
-      this.fileList = [];
-    },
-    handlePreview(file) {
-      console.log(file);
-    },
-    handleAvatarError() {
-      this.upLoading = false;
-    },
-    handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 1 个文件，本次选择了 ${
-          files.length
-        } 个文件，共选择了 ${files.length + fileList.length} 个文件`
-      );
-      this.upLoading = false;
-    },
-
-    beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${file.name}？`);
-    },
-    handleSuccess(response, file) {
-      this.upLoading = true;
-    },
-    handleClose(done) {
-      this.$confirm("确认关闭？")
-        .then(_ => {
-          done();
-        })
-        .catch(_ => {});
-    },
     changeImageHubRadio(value) {
       this.activeImageHubNames = value + "";
       if (!value) {
@@ -489,6 +428,9 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+.d2-w-150 {
+  width: 150px;
+}
 .upload-demo {
   text-align: center;
 }

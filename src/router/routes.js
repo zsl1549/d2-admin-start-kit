@@ -31,6 +31,16 @@ const frameIn = [
         },
         component: _import('InstallProcess/index')
       },
+      // 安装成功
+      {
+        path: 'successfulInstallation',
+        name: 'successfulInstallation',
+        meta: {
+          title: '安装成功',
+          auth: true
+        },
+        component: _import('InstallProcess/components/successfulInstallation/index')
+      },
       // 系统 前端日志
       {
         path: 'log',
@@ -86,8 +96,4 @@ const errorPage = [
 export const frameInRoutes = frameIn
 
 // 重新组织后导出
-export default [
-  ...frameIn,
-  ...frameOut,
-  ...errorPage
-]
+export default [...frameIn, ...frameOut, ...errorPage]

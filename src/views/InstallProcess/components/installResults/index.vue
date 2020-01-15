@@ -1,61 +1,31 @@
 <template>
   <div>
-    <div class="result">
+    <div class="result" v-loading="loading">
       <el-row :gutter="12">
-        <el-col :span="24" class="d2-mt" v-for="(item) in installList" :key="item.stepName">
+        <el-col :span="24" class="d2-mt" v-for="(item,index) in installList" :key="item.stepName">
           <el-card v-if="item.stepName!=='step_install_component'" shadow="hover">
-            <el-row :gutter="12">
-              <el-col :span="23" class="d2-f-16">{{phaseMap[item.stepName]}}</el-col>
-              <el-col :span="1">
-                <i
-                  v-if="item.status==='status_finished'"
-                  class="el-icon-circle-check success d2-f-20"
-                ></i>
-                <i
-                  v-else-if="item.status==='status_failed'"
-                  class="el-icon-circle-close error d2-f-20"
-                ></i>
-                <i v-else class="el-icon-refresh d2-animation success d2-f-20"></i>
-              </el-col>
-              <el-progress :percentage="item.progress" class="d2-h-50 d2-mb"></el-progress>
-              <div class="d2-mt" v-show="(item.reason ||item.message )">
-                <el-col v-show="item.reason" :span="2" class="description errorTitleColor">原因:</el-col>
-                <el-col :span="22" class="description">{{item.reason}}</el-col>
-                <el-col v-show="item.message" :span="2" class="description errorTitleColor">消息:</el-col>
-                <el-col :span="22" class="description">{{item.message}}</el-col>
-              </div>
-            </el-row>
+            <install-component
+              :item="item"
+              :index="index"
+              :dialogVisible="dialogVisible"
+              @onhandleDialogVisible="dialogVisible=true"
+            ></install-component>
           </el-card>
 
           <el-card v-else class="box-card">
             <div slot="header" class="clearfix">
-              <el-row :gutter="12">
-                <el-col :span="23" class="d2-f-16">{{phaseMap[item.stepName]}}</el-col>
-                <el-col :span="1">
-                  <i
-                    v-if="item.status==='status_finished'"
-                    class="el-icon-circle-check success d2-f-20"
-                  ></i>
-                  <i
-                    v-else-if="item.status==='status_failed'"
-                    class="el-icon-circle-close error d2-f-20"
-                  ></i>
-                  <i v-else class="el-icon-refresh d2-animation success d2-f-20"></i>
-                </el-col>
-                <el-progress :percentage="item.progress" class="d2-h-50 d2-mb"></el-progress>
-                <div v-show="(item.reason ||item.message )">
-                  <el-col v-show="item.reason" :span="2" class="description errorTitleColor">原因:</el-col>
-                  <el-col :span="22" class="description">{{item.reason}}</el-col>
-                  <el-col v-show="item.message" :span="2" class="description errorTitleColor">消息:</el-col>
-                  <el-col :span="22" class="description">{{item.message}}</el-col>
-                </div>
-              </el-row>
+              <install-component
+                :item="item"
+                :index="index"
+                :dialogVisible="dialogVisible"
+                @onhandleDialogVisible="dialogVisible=true"
+              ></install-component>
             </div>
             <div class="text item" v-show="componentList">
               <el-row :gutter="12" class="d2-mb">
                 <el-col :span="14" class="d2-f-16">组件名称</el-col>
                 <el-col :span="5" class="d2-f-16 d2-text-cen">组件副本数</el-col>
-                <el-col :span="5" class="d2-f-16 d2-text-cen">已就绪副本数</el-col>
+                <el-col :span="4" class="d2-f-16 d2-text-cen">已就绪副本数</el-col>
               </el-row>
 
               <el-collapse accordion>
@@ -65,11 +35,11 @@
                   class="componentTitle"
                 >
                   <template slot="title">
-                    <el-col :span="14" class="d2-f-14">{{item.name}}</el-col>
-                    <el-col :span="5" class="d2-f-14 d2-text-cen">{{item.replicas}}</el-col>
+                    <el-col :span="15" class="d2-f-14">{{item.name}}</el-col>
+                    <el-col :span="4" class="d2-f-14 d2-text-cen">{{item.replicas}}</el-col>
                     <el-col :span="5" class="d2-f-14 d2-text-cen">{{item.readyReplicas}}</el-col>
                   </template>
-                  <div>
+                  <div class="d2-mt">
                     <div v-for="items in item.podStatus" :key="items.name">
                       <div class="componentBox">
                         <el-col :span="4" class="d2-f-14 minComponentColor">名称</el-col>
@@ -99,13 +69,27 @@
         </el-col>
       </el-row>
     </div>
+    <Uploads
+      :nextLoading="nextLoading"
+      :dialogVisible="dialogVisible"
+      @onSubmitForm="dialogVisible=false"
+    />
   </div>
 </template>
 <script>
+import Uploads from "../upload";
+import InstallComponent from "./installComponent";
+
 export default {
   name: "installResults",
+  components: {
+    Uploads,
+    InstallComponent
+  },
   data() {
     return {
+      nextLoading: false,
+      dialogVisible: false,
       num: 0,
       installList: [],
       loading: true,
@@ -148,18 +132,29 @@ export default {
         if (res) {
           this.loading = false;
           this.installList = res.data;
-          if (res.data && res.data.length > 0) {
-            let resuitsList = res.data.filter(
+          let arrs = res.data;
+          if (arrs && arrs.length > 0) {
+            let resuitsList = arrs.filter(
               item =>
                 item.status != "status_waiting" &&
                 item.status != "status_processing"
             );
+
+            let isSuccess = arrs.every(function(value, index, arrs) {
+              if (value === "status_finished") {
+                return true;
+              }
+            });
+
+            isSuccess &&
+              this.$router.push({
+                name: "successfulInstallation"
+              });
+
             if (resuitsList.length > 0) {
               this.timer = setTimeout(() => {
                 this.fetchClusterInstallResults();
               }, 8000);
-            } else {
-              this.$emit("onResults");
             }
           }
         }
@@ -208,12 +203,17 @@ export default {
   font-size: 14px;
 }
 .result {
-  width: 767px;
+  width: 1000px;
+  min-height: 300px;
+  margin: 0 auto;
   .d2-animation {
     animation: rotating 1s linear infinite;
   }
   .success {
     color: #52c41a;
+  }
+  .loadings {
+    color: #303133;
   }
   .error {
     color: #f5222d;
