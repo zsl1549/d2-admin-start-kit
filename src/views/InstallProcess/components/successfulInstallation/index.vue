@@ -1,33 +1,88 @@
 <template>
   <d2-container type="full">
     <div class="d2-ml-115 d2-w-1100">
-      <el-collapse class="clbr" v-model="activeName" accordion>
-        <el-collapse-item
-          name="rsultSucess"
-          class="installationStepTitle"
-          title="访问地址"
-        >
-          <div class="installSuccess dr-mt">
-            <span class="el-icon-circle-check"></span>恭喜你，安装成功
+      <el-card shadow="hover">
+        <div>
+          <div class="d2-h-20">
+            <el-col :span="4">访问地址</el-col>
+            <el-col :span="16" class="d2-text-center">
+              <a :href="accessAddress" target="_blank" class="successLink">{{accessAddress}}</a>
+            </el-col>
+            <el-col :span="4" class="d2-text-center">
+              <el-button size="small" type="primary" @click="onhandleDelete">卸载</el-button>
+            </el-col>
           </div>
-          <router-link to tag="p" class="successLink d2-mt">wwww.hyf521.com</router-link>
-        </el-collapse-item>
-      </el-collapse>
+          <!-- <span>组件状态</span> -->
+          <el-divider></el-divider>
+          <span>
+            <rainbond-component :componentList="componentList"></rainbond-component>
+          </span>
+        </div>
+      </el-card>
     </div>
   </d2-container>
 </template>
 
 <script>
+import RainbondComponent from "../installResults/rainbondComponent";
+
 export default {
   name: "successfulInstallation",
+  components: {
+    RainbondComponent
+  },
   data() {
     return {
       activeName: "rsultSucess",
+      componentList: [],
+      accessAddress: ""
     };
+  },
+  created() {
+    this.fetchClusterInstallResultsState();
+    this.fetchAccessAddress();
+  },
+  methods: {
+    onhandleDelete() {
+      this.$confirm("确定要卸载吗？")
+        .then(_ => {
+          this.$store.dispatch("deleteUnloadingPlatform").then(res => {
+            if (res && res.code === 200) {
+              this.$notify({
+                type: "success",
+                title: "卸载",
+                message: "卸载成功"
+              });
+              this.$router.push({
+                name: "index"
+              });
+            }
+          });
+        })
+        .catch(_ => {});
+    },
+    fetchAccessAddress() {
+      this.$store.dispatch("fetchAccessAddress").then(res => {
+        if (res && res.code === 200) {
+          this.accessAddress = res.data;
+        }
+      });
+    },
+    fetchClusterInstallResultsState() {
+      this.$store.dispatch("fetchClusterInstallResultsState").then(res => {
+        if (res && res.code === 200) {
+          this.componentList = res.data;
+        }
+      });
+    }
   }
 };
 </script>
 <style lang="scss" scoped>
+.d2-h-20 {
+  height: 20px;
+  line-height: 20px;
+}
 .clbr {
   border: none;
 }
@@ -45,10 +100,9 @@ export default {
 }
 .successLink {
   text-align: center;
-  font-size: 18px;
   margin: 0;
   padding: 0;
-  color: #409EFF;
+  color: #409eff;
 }
 .installSuccess {
   font-size: 22px;

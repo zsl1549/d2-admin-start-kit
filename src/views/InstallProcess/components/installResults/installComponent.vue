@@ -6,16 +6,22 @@
       </div>
     </el-col>
     <el-col :span="22" class="d2-f-16">{{phaseMap[item.stepName]}}</el-col>
+
+    <!-- <p>准备存储、镜像仓库。 预计 5 分钟 </p>
+    <p> 解压基础镜像 预计 5 分钟</p>
+    <p> 推送镜像到镜像仓库  预计 10 分钟</p>
+    <p> 安装所需的组件  预计 10 分钟</p> -->
     <el-col :span="1">
       <i v-if="item.status==='status_finished'" class="el-icon-circle-check success d2-f-20"></i>
       <i v-else-if="item.status==='status_failed'" class="el-icon-circle-close error d2-f-20"></i>
+      <i v-else-if="item.status==='status_waiting'" class="el-icon-refresh-right loadings d2-f-20"></i>
       <i v-else class="el-icon-refresh d2-animation loadings d2-f-20"></i>
     </el-col>
     <el-progress :percentage="item.progress" class="d2-h-50 d2-mb"></el-progress>
     <div v-show="(item.reason ||item.message )">
-      <el-col v-show="item.reason" :span="24" class="description cen errorTitleColor">
+      <el-col :span="24" class="description cen errorTitleColor">
         <el-button
-          v-show="item.reason"
+          v-show="item.stepName==='step_download'&&item.status==='status_failed'"
           size="small"
           type="primary"
           @click="submit"
@@ -25,9 +31,9 @@
         </el-button>
       </el-col>
       <el-col v-show="item.reason" :span="2" class="description errorTitleColor">原因:</el-col>
-      <el-col :span="22" class="description">{{item.reason}}</el-col>
+      <el-col v-show="item.reason" :span="22" class="description">{{item.reason}}</el-col>
       <el-col v-show="item.message" :span="2" class="description errorTitleColor">消息:</el-col>
-      <el-col :span="22" class="description">{{item.message}}</el-col>
+      <el-col v-show="item.message" :span="22" class="description">{{item.message}}</el-col>
     </div>
   </el-row>
 </template>

@@ -1,40 +1,38 @@
 <template>
-    <el-dialog
-      title="安装包下载失败，请上传安装包。"
-      :visible.sync="dialogVisible"
-      width="30%"
-      :before-close="handleClose"
+  <el-dialog :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+    <div slot="title">
+      安装包下载失败，请下载
+      <a
+        target="_blank"
+        href="https://www.baidu.com"
+        download="filename"
+      >https://www.baidu.com</a>成功后将其上传。
+    </div>
+    <el-upload
+      class="upload-demo"
+      :action="api"
+      :data="uploadObj"
+      :on-preview="handlePreview"
+      :on-remove="handleRemove"
+      :before-remove="beforeRemove"
+      :on-success="handleSuccess"
+      :on-error="handleAvatarError"
+      multiple
+      :limit="1"
+      :on-exceed="handleExceed"
+      :file-list="fileList"
+      element-loading-text="正在上传中。。。请稍等"
     >
-      <el-upload
-        class="upload-demo"
-        :action="api"
-        :data="uploadObj"
-        :on-preview="handlePreview"
-        :on-remove="handleRemove"
-        :before-remove="beforeRemove"
-        :on-success="handleSuccess"
-        :on-error="handleAvatarError"
-        multiple
-        :limit="1"
-        :on-exceed="handleExceed"
-        :file-list="fileList"
-        element-loading-text="正在上传中。。。请稍等"
-      >
-        <el-button size="small" type="primary">
-          上传
-          <i class="el-icon-upload el-icon--right"></i>
-        </el-button>
-      </el-upload>
-      <el-progress v-show="showProgress" :percentage="progressLength" :stroke-width="2"></el-progress>
-      <span slot="footer" class="dialog-footer" v-show="upLoading">
-        <el-button
-          size="small"
-          type="primary"
-          :loading="nextLoading"
-          @click="submitForm()"
-        >下一步</el-button>
-      </span>
-    </el-dialog>
+      <el-button size="small" type="primary">
+        上传
+        <i class="el-icon-upload el-icon--right"></i>
+      </el-button>
+    </el-upload>
+    <el-progress v-show="showProgress" :percentage="progressLength" :stroke-width="2"></el-progress>
+    <span slot="footer" class="dialog-footer" v-show="upLoading">
+      <el-button size="small" type="primary" :loading="nextLoading" @click="submitForm()">下一步</el-button>
+    </span>
+  </el-dialog>
 </template>
 
 <script>
@@ -44,7 +42,7 @@ if (baseDomain == "/") {
 }
 export default {
   name: "clusterConfiguration",
-   props: {
+  props: {
     dialogVisible: {
       type: Boolean,
       default: false
@@ -52,7 +50,7 @@ export default {
     nextLoading: {
       type: Boolean,
       default: false
-    },
+    }
   },
   data() {
     var validatePass2 = (rule, value, callback) => {
@@ -70,15 +68,15 @@ export default {
       uploadObj: { file_type: "install_file" },
       loading: true,
       setgatewayNodes: [],
-      fileList: [],
+      fileList: []
     };
   },
   created() {
     this.fetchClusterInfo();
   },
   methods: {
-    submitForm(){
-        this.$emit("onSubmitForm");
+    submitForm() {
+      this.$emit("onSubmitForm");
     },
     handleRemove(file, fileList) {
       this.fileList = [];
@@ -110,7 +108,7 @@ export default {
           done();
         })
         .catch(_ => {});
-    },
+    }
   }
 };
 </script>

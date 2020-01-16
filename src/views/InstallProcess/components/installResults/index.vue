@@ -21,50 +21,7 @@
                 @onhandleDialogVisible="dialogVisible=true"
               ></install-component>
             </div>
-            <div class="text item" v-show="componentList">
-              <el-row :gutter="12" class="d2-mb">
-                <el-col :span="14" class="d2-f-16">组件名称</el-col>
-                <el-col :span="5" class="d2-f-16 d2-text-cen">组件副本数</el-col>
-                <el-col :span="4" class="d2-f-16 d2-text-cen">已就绪副本数</el-col>
-              </el-row>
-
-              <el-collapse accordion>
-                <el-collapse-item
-                  v-for="item in componentList"
-                  :key="item.name"
-                  class="componentTitle"
-                >
-                  <template slot="title">
-                    <el-col :span="15" class="d2-f-14">{{item.name}}</el-col>
-                    <el-col :span="4" class="d2-f-14 d2-text-cen">{{item.replicas}}</el-col>
-                    <el-col :span="5" class="d2-f-14 d2-text-cen">{{item.readyReplicas}}</el-col>
-                  </template>
-                  <div class="d2-mt">
-                    <div v-for="items in item.podStatus" :key="items.name">
-                      <div class="componentBox">
-                        <el-col :span="4" class="d2-f-14 minComponentColor">名称</el-col>
-                        <el-col :span="20" class="d2-f-14 descColor">{{items.name}}</el-col>
-                      </div>
-                      <div class="componentBox">
-                        <el-col :span="4" class="d2-f-14 minComponentColor">阶段</el-col>
-                        <el-col
-                          :span="20"
-                          class="d2-f-14 descColor"
-                          :style="{
-                      color:componentColor[items.phase]
-                      }"
-                        >{{items.phase}}</el-col>
-                      </div>
-
-                      <div class="componentBox" v-show="items.reason">
-                        <el-col :span="4" class="d2-f-14 minComponentColor">原因</el-col>
-                        <el-col :span="20" class="d2-f-14 descColor">{{items.reason}}</el-col>
-                      </div>
-                    </div>
-                  </div>
-                </el-collapse-item>
-              </el-collapse>
-            </div>
+            <rainbond-component :componentList="componentList"></rainbond-component>
           </el-card>
         </el-col>
       </el-row>
@@ -79,12 +36,14 @@
 <script>
 import Uploads from "../upload";
 import InstallComponent from "./installComponent";
+import RainbondComponent from "./rainbondComponent";
 
 export default {
   name: "installResults",
   components: {
     Uploads,
-    InstallComponent
+    InstallComponent,
+    RainbondComponent
   },
   data() {
     return {
@@ -93,20 +52,6 @@ export default {
       num: 0,
       installList: [],
       loading: true,
-      phaseMap: {
-        step_setting: "配置环境",
-        step_download: "下载安装包",
-        step_prepare_infrastructure: "准备基础设施",
-        step_unpacke: "解压安装包",
-        step_handle_image: "处理镜像",
-        step_install_component: "安装Rainbond组件"
-      },
-      componentColor: {
-        Pending: "rgba(0, 0, 0, 0.45)",
-        Running: "#52c41a",
-        Waiting: "rgba(0, 0, 0, 0.45)",
-        Terminated: "#f5222d"
-      },
       componentState: {
         Running: "成功",
         Waiting: "等待",
@@ -116,27 +61,90 @@ export default {
     };
   },
   created() {
-    this.fetchClusterInstallResults();
-    this.fetchClusterInstallResultsState();
+    this.detectionCluster();
   },
   beforeDestroy() {
     this.timer && clearInterval(this.timer);
+    this.timerp && clearInterval(this.timerp);
     this.timers && clearInterval(this.timers);
   },
   methods: {
+    detectionCluster() {
+      this.$store
+        .dispatch("detectionCluster")
+        .then(res => {
+          this.loading = false;
+
+          if (res && res.code == 200) {
+            this.installList = res.data.statusList;
+            let arrs = res.data.statusList;
+            if (arrs && arrs.length > 0) {
+              arrs.map(item => {
+                const { stepName, status } = item;
+                if (
+                  stepName === "step_download" &&
+                  status === "status_failed"
+                ) {
+                  this.dialogVisible = true;
+                  this.timer && clearInterval(this.timer);
+                }
+              });
+            }
+
+            if (
+              res.data.finalStatus === "status_waiting" ||
+              res.data.finalStatus === "status_processing"
+            ) {
+              this.timerp = setTimeout(() => {
+                this.detectionCluster();
+              }, 5000);
+            } else if (res.data.finalStatus === "status_finished") {
+              this.timerp && clearInterval(this.timerp);
+              this.addCluster();
+            } else {
+              this.dialogVisible = true;
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+
+    addCluster() {
+      this.$store
+        .dispatch("addCluster")
+        .then(en => {
+          if (en && en.code == 200) {
+            this.fetchClusterInstallResults();
+            this.fetchClusterInstallResultsState();
+          } else if (en && en.code == 1002) {
+            this.$notify({
+              type: "warning",
+              title: "下载流程正在进行中",
+              message: "请稍后再试"
+            });
+          } else {
+            this.dialogVisible = true;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+
     format(percentage) {
       return "";
     },
     onSubmitForm() {
       this.dialogVisible = false;
-      this.fetchClusterInstallResults();
+      this.addCluster();
     },
     fetchClusterInstallResults() {
       this.$store.dispatch("fetchClusterInstallResults").then(res => {
         if (res) {
-          this.loading = false;
-          this.installList = res.data;
-          let arrs = res.data;
+          this.installList = res.data.statusList;
+          let arrs = res.data.statusList;
           if (arrs && arrs.length > 0) {
             arrs.map(item => {
               const { stepName, status } = item;
@@ -145,27 +153,18 @@ export default {
                 this.timer && clearInterval(this.timer);
               }
             });
-            let resuitsList = arrs.filter(
-              item =>
-                item.status != "status_waiting" &&
-                item.status != "status_processing"
-            );
 
-            let isSuccess = arrs.every(function(value, index, arrs) {
-              if (value === "status_finished") {
-                return true;
-              }
-            });
-
-            isSuccess &&
-              this.$router.push({
-                name: "successfulInstallation"
-              });
-
-            if (resuitsList.length > 0) {
+            if (
+              res.data.finalStatus != "status_waiting" &&
+              res.data.finalStatus != "status_processing"
+            ) {
               this.timer = setTimeout(() => {
                 this.fetchClusterInstallResults();
               }, 8000);
+            } else if (res.data.finalStatus === "status_finished") {
+              this.$router.push({
+                name: "successfulInstallation"
+              });
             }
           }
         }
@@ -194,22 +193,15 @@ export default {
   height: 50px;
   line-height: 50px;
 }
-.componentBox {
-  min-height: 39px;
-  line-height: 39px;
-}
-.minComponentColor {
-  color: #99a9bf !important;
-}
+
+
 .errorTitleColor {
   color: #303133 !important;
 }
 .d2-text-cen {
   text-align: center;
 }
-.descColor {
-  color: #606266;
-}
+
 .d2-f-14 {
   font-size: 14px;
 }
@@ -264,14 +256,4 @@ export default {
   }
 }
 </style>
-<style lang="scss" >
-.componentTitle {
-  .el-collapse-item__header {
-    border-bottom: 1px solid #ebeef5 !important;
-    width: 100% !important;
-  }
-  .el-collapse-item__header:hover {
-    background: #f5f7fa;
-  }
-}
-</style>
+

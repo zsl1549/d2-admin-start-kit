@@ -1,10 +1,9 @@
 <template>
-  <div>
+  <div v-loading="loading">
     <el-form
       v-if="ruleForm"
       :model="ruleForm"
       :rules="rules"
-      v-loading="loading"
       @submit.native.prevent
       hide-required-asterisk
       ref="ruleForm"
@@ -238,11 +237,11 @@
       </el-form-item>
     </el-form>
 
-    <Uploads
+    <!-- <Uploads
       :nextLoading="nextLoading"
       :dialogVisible="dialogVisible"
       @onSubmitForm="submitForm('ruleForm',true)"
-    />
+    />-->
   </div>
 </template>
 
@@ -390,33 +389,9 @@ export default {
           this.$store
             .dispatch("fixClusterInfo", this.ruleForm)
             .then(res => {
+              this.handleCancelLoading();
               if (res && res.code == 200) {
-                this.$store
-                  .dispatch("addCluster", this.ruleForm)
-                  .then(en => {
-                    if (en && en.code == 200) {
-                      this.dialogVisible = false;
-                      this.$emit("onResults");
-                    } else if (en && en.code == 1002) {
-                      this.dialogVisible = false;
-                      this.$notify({
-                        type: "warning",
-                        title: "下载流程正在进行中",
-                        message: "请稍后再试"
-                      });
-                      this.$emit("onResults");
-                    } else {
-                      this.dialogVisible = true;
-                    }
-                    this.nextLoading = false;
-                    this.loading = false;
-                  })
-                  .catch(err => {
-                    console.log(err);
-                  });
-              } else {
-                this.nextLoading = false;
-                this.loading = false;
+                this.$emit("onResults");
               }
             })
             .catch(err => {
@@ -427,6 +402,11 @@ export default {
           return false;
         }
       });
+    },
+
+    handleCancelLoading() {
+      this.nextLoading = false;
+      this.loading = false;
     }
   }
 };
