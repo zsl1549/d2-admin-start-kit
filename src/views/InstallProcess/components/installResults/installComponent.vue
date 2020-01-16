@@ -5,12 +5,9 @@
         <div class="el-step__icon-inner">{{index+1}}</div>
       </div>
     </el-col>
-    <el-col :span="22" class="d2-f-16">{{phaseMap[item.stepName]}}</el-col>
+    <el-col :span="16" class="d2-f-16">{{phaseMap[item.stepName]}}</el-col>
+    <el-col :span="6" class="d2-f-12">{{phaseDesc[item.stepName]}}</el-col>
 
-    <!-- <p>准备存储、镜像仓库。 预计 5 分钟 </p>
-    <p> 解压基础镜像 预计 5 分钟</p>
-    <p> 推送镜像到镜像仓库  预计 10 分钟</p>
-    <p> 安装所需的组件  预计 10 分钟</p> -->
     <el-col :span="1">
       <i v-if="item.status==='status_finished'" class="el-icon-circle-check success d2-f-20"></i>
       <i v-else-if="item.status==='status_failed'" class="el-icon-circle-close error d2-f-20"></i>
@@ -64,6 +61,14 @@ export default {
         step_unpacke: "解压安装包",
         step_handle_image: "处理镜像",
         step_install_component: "安装Rainbond组件"
+      },
+      phaseDesc: {
+        step_setting: "准备环境、预计 3 分钟",
+        step_download: "下载所需的安装包、预计 5 分钟",
+        step_prepare_infrastructure: "准备存储、镜像仓库、预计 5 分钟",
+        step_unpacke: "解压基础镜像、预计 5 分钟",
+        step_handle_image: "推送镜像到镜像仓库、预计 10 分钟",
+        step_install_component: "安装所需的组件、预计 10 分钟"
       }
     };
   },
@@ -84,6 +89,10 @@ export default {
 }
 .d2-animation {
   animation: rotating 1s linear infinite;
+}
+.d2-f-12 {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.45);
 }
 .description {
   font-size: 14px;
