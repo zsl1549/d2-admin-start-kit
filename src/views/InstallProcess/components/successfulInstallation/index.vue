@@ -1,7 +1,7 @@
 <template>
   <d2-container type="full">
-    <div class="d2-ml-115 d2-w-1100">
-      <el-card  class="d2-mb">
+    <div class="d2-ml-115 d2-w-1100" v-loading="loading">
+      <el-card class="d2-mb">
         <div class="d2-h-30">
           <el-col :span="4">访问地址</el-col>
           <el-col :span="16" class="d2-text-center">
@@ -13,7 +13,7 @@
         </div>
       </el-card>
 
-      <el-card shadow="hover">
+      <el-card shadow="hover" v-show="componentList">
         <span>
           <rainbond-component :componentList="componentList"></rainbond-component>
         </span>
@@ -34,12 +34,16 @@ export default {
     return {
       activeName: "rsultSucess",
       componentList: [],
+      loading: true,
       accessAddress: ""
     };
   },
   created() {
-    this.fetchClusterInstallResultsState();
     this.fetchAccessAddress();
+    this.fetchClusterInstallResultsState(true);
+  },
+  beforeDestroy() {
+    this.timers && clearInterval(this.timers);
   },
   methods: {
     onhandleDelete() {
@@ -51,9 +55,6 @@ export default {
                 type: "success",
                 title: "卸载",
                 message: "卸载成功"
-              });
-              this.$router.push({
-                name: "index"
               });
             }
           });
@@ -67,18 +68,23 @@ export default {
         }
       });
     },
-    fetchClusterInstallResultsState() {
+    fetchClusterInstallResultsState(isloading) {
       this.$store.dispatch("fetchClusterInstallResultsState").then(res => {
+        if (isloading) {
+          this.loading = false;
+        }
         if (res && res.code === 200) {
           this.componentList = res.data;
         }
+        this.timers = setTimeout(() => {
+          this.fetchClusterInstallResultsState();
+        }, 8000);
       });
     }
   }
 };
 </script>
 <style lang="scss" scoped>
-
 .d2-h-30 {
   height: 30px;
   line-height: 30px;

@@ -236,23 +236,13 @@
         </div>
       </el-form-item>
     </el-form>
-
-    <!-- <Uploads
-      :nextLoading="nextLoading"
-      :dialogVisible="dialogVisible"
-      @onSubmitForm="submitForm('ruleForm',true)"
-    />-->
   </div>
 </template>
 
 <script>
-import Uploads from "../upload";
 
 export default {
   name: "clusterConfiguration",
-  components: {
-    Uploads
-  },
   data() {
     var validatePass2 = (rule, value, callback) => {
       if (this.setgatewayNodes.length === 0) {
@@ -262,9 +252,7 @@ export default {
       }
     };
     return {
-      nextLoading: false,
       upLoading: false,
-      dialogVisible: false,
       loading: true,
       ruleForm: false,
       activeImageHubNames: "true",
@@ -380,7 +368,6 @@ export default {
             });
           this.ruleForm.gatewayNodes = arr;
           this.loading = true;
-          this.nextLoading = true;
           this.ruleForm.regionDatabase.port = Number(
             this.ruleForm.regionDatabase.port
           );
@@ -405,7 +392,6 @@ export default {
     },
 
     handleCancelLoading() {
-      this.nextLoading = false;
       this.loading = false;
     }
   }

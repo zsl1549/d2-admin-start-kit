@@ -1,13 +1,14 @@
 <template>
   <el-dialog :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
     <div slot="title">
-      安装包下载失败，请下载 <a
+      安装包下载失败，请下载
+      <a
         target="_blank"
         href="http://192.168.3.8/fanyangyang/Downloads/rainbond-pkg-V5.2-dev.tgz"
         download="filename"
         style="color:#3489ff"
-      >安装包</a>、成功后将其上传。
-
+      >安装包</a>
+、成功后将其上传。
     </div>
     <el-upload
       class="upload-demo"
@@ -31,7 +32,7 @@
     </el-upload>
     <el-progress v-show="showProgress" :percentage="progressLength" :stroke-width="2"></el-progress>
     <span slot="footer" class="dialog-footer" v-show="upLoading">
-      <el-button size="small" type="primary" :loading="nextLoading" @click="submitForm()">下一步</el-button>
+      <el-button size="small" type="primary" :loading="nextLoading" @click="submitForm()">完成</el-button>
     </span>
   </el-dialog>
 </template>
@@ -77,7 +78,7 @@ export default {
   },
   methods: {
     submitForm() {
-      this.$emit("onSubmitForm");
+      this.$emit("onhandleClone");
     },
     handleRemove(file, fileList) {
       this.fileList = [];
@@ -102,6 +103,7 @@ export default {
     },
     handleSuccess(response, file) {
       this.upLoading = true;
+      this.$emit("onSubmitLoads");
     },
     handleClose(done) {
       this.$confirm("确认关闭？")

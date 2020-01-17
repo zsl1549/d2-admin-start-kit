@@ -29,7 +29,8 @@
     <Uploads
       :nextLoading="nextLoading"
       :dialogVisible="dialogVisible"
-      @onSubmitForm="onSubmitForm"
+      @onSubmitLoads="onSubmitLoads"
+      @onhandleClone="dialogVisible=false"
     />
   </div>
 </template>
@@ -136,8 +137,7 @@ export default {
     format(percentage) {
       return "";
     },
-    onSubmitForm() {
-      this.dialogVisible = false;
+    onSubmitLoads() {
       this.addCluster();
     },
     fetchClusterInstallResults() {
