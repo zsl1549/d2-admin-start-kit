@@ -1,12 +1,13 @@
 <template>
   <el-dialog :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
     <div slot="title">
-      安装包下载失败，请下载
-      <a
+      安装包下载失败，请下载 <a
         target="_blank"
-        href="https://www.baidu.com"
+        href="http://192.168.3.8/fanyangyang/Downloads/rainbond-pkg-V5.2-dev.tgz"
         download="filename"
-      >https://www.baidu.com</a>成功后将其上传。
+        style="color:#3489ff"
+      >安装包</a>、成功后将其上传。
+
     </div>
     <el-upload
       class="upload-demo"
