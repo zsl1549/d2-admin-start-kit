@@ -1,23 +1,22 @@
 <template>
   <d2-container type="full">
     <div class="d2-ml-115 d2-w-1100">
-      <el-card shadow="hover">
-        <div>
-          <div class="d2-h-20">
-            <el-col :span="4">访问地址</el-col>
-            <el-col :span="16" class="d2-text-center">
-              <a :href="accessAddress" target="_blank" class="successLink">{{accessAddress}}</a>
-            </el-col>
-            <el-col :span="4" class="d2-text-center">
-              <el-button size="small" type="primary" @click="onhandleDelete">卸载</el-button>
-            </el-col>
-          </div>
-          <!-- <span>组件状态</span> -->
-          <el-divider></el-divider>
-          <span>
-            <rainbond-component :componentList="componentList"></rainbond-component>
-          </span>
+      <el-card  class="d2-mb">
+        <div class="d2-h-30">
+          <el-col :span="4">访问地址</el-col>
+          <el-col :span="16" class="d2-text-center">
+            <a :href="accessAddress" target="_blank" class="successLink">{{accessAddress}}</a>
+          </el-col>
+          <el-col :span="4" class="d2-text-center">
+            <el-button size="small" type="primary" @click="onhandleDelete">卸载</el-button>
+          </el-col>
         </div>
+      </el-card>
+
+      <el-card shadow="hover">
+        <span>
+          <rainbond-component :componentList="componentList"></rainbond-component>
+        </span>
       </el-card>
     </div>
   </d2-container>
@@ -79,9 +78,10 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.d2-h-20 {
-  height: 20px;
-  line-height: 20px;
+
+.d2-h-30 {
+  height: 30px;
+  line-height: 30px;
 }
 .clbr {
   border: none;

@@ -153,18 +153,17 @@ export default {
                 this.timer && clearInterval(this.timer);
               }
             });
-
             if (
-              res.data.finalStatus != "status_waiting" &&
-              res.data.finalStatus != "status_processing"
+              res.data.finalStatus === "status_finished" ||
+              res.data.finalStatus === "status_failed"
             ) {
-              this.timer = setTimeout(() => {
-                this.fetchClusterInstallResults();
-              }, 8000);
-            } else if (res.data.finalStatus === "status_finished") {
               this.$router.push({
                 name: "successfulInstallation"
               });
+            } else {
+              this.timer = setTimeout(() => {
+                this.fetchClusterInstallResults();
+              }, 8000);
             }
           }
         }
@@ -172,17 +171,11 @@ export default {
     },
     fetchClusterInstallResultsState() {
       this.$store.dispatch("fetchClusterInstallResultsState").then(res => {
-        if (res && res.code === 200) {
           this.componentList = res.data;
           this.num += 1;
           this.timers = setTimeout(() => {
             this.fetchClusterInstallResultsState();
           }, 8000);
-        } else if (this.num <= 3) {
-          this.timers = setTimeout(() => {
-            this.fetchClusterInstallResultsState();
-          }, 8000);
-        }
       });
     }
   }
@@ -193,7 +186,6 @@ export default {
   height: 50px;
   line-height: 50px;
 }
-
 
 .errorTitleColor {
   color: #303133 !important;
