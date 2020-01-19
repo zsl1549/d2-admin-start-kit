@@ -54,7 +54,7 @@ export default {
     componentList: {
       type: Array,
       default: []
-    },
+    }
   },
   data() {
     return {
@@ -66,6 +66,13 @@ export default {
       }
     };
   },
+
+  watch: {
+    componentList(newValue, oldValue) {
+      console.log('newValue',newValue);
+      this.componentList=newValue
+    }
+  }
 };
 </script>
 
